@@ -1,18 +1,9 @@
 import discord
 import responses
+from bot_token import discord_bot_token
 
-
-
-async def send_message(message, user_message, is_private):
-    try:
-        response = responses.get_response(user_message)
-        await message.author.send(response) if is_private else await message.channel.send(response)
-
-    except Exception as e:
-        print(e)
 
 def run_discord_bot():
-    TOKEN = 'MzIxNDY2ODUzNDc2MTM5MDA5.Gxx_Ic.mkoRYJkKqwqIkooqCxAA3C0jdokQPaQZym8NKU'
     intents = discord.Intents.default()
     intents.message_content = True
     client = discord.Client(intents = intents)
@@ -30,11 +21,7 @@ def run_discord_bot():
         channel = str(message.channel)
 
         print(f'{username} said: "{user_message}" in {channel}')
+        await responses.chat_commands(message)
 
-        if user_message[0] == '!':
-            user_message = user_message[1:]
-            await send_message(message, user_message, is_private=True)
-        else:
-            await send_message(message, user_message, is_private=False)
 
-    client.run(TOKEN)
+    client.run(discord_bot_token)

@@ -1,0 +1,6 @@
+Built with Python 3.12
+
+Open bot_token.py and replace insert token here with your own bot token (keep the quotes).
+Should look something like: discord_bot_token = "adslkkfja;lsdkkfja;sldkfj"
+
+This is a very simplistic discord bot that I've used as a learning opportunity for data manipulation with pandas.

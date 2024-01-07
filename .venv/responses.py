@@ -8,11 +8,11 @@ import pandas as pd
 
 ## Create seperate functions to keep command list cleaner
 async def chat_commands(ctx):
-    if ctx.content.startswith('!balance '):
+    if ctx.content.startswith('!balance'):
         await  ctx.channel.send(GetBalance(ctx))
-    if ctx.content.startswith('!allin '):
+    if ctx.content.startswith('!allin'):
         await ctx.channel.send(AllIn(ctx))
-    if ctx.content.startswith('!register '):
+    if ctx.content.startswith('!register'):
         await ctx.channel.send(Register(ctx))
     if ctx.content.startswith('!roulette '):
         await ctx.channel.send(Roulette(ctx))
@@ -107,25 +107,25 @@ def Roulette(ctx):
             ## checks bools and runs bet
             if enough_money and colors and message_array[2] != 'green':
                 if result >= 17:
-                    response = 'success'
                     bal = bal + wager
+                    response = 'Success! Your new balance is: ' + str(bal)
                 else:
-                    response = 'failure'
                     bal = bal - wager
+                    response = 'Failure! Your new balance is: ' + str(bal)
             if enough_money and colors and message_array[2] == 'green':
                 if result == 0:
-                    response = 'success'
                     bal = bal + (wager * 35) - wager
+                    response = 'Success! Your new balance is: ' + str(bal)
                 else:
-                    response = 'failure'
                     bal = bal - wager
+                    response = 'Failure! Your new balance is: ' + str(bal)
             if enough_money and not colors:
                     if result == int(message_array[2]):
-                        response = 'success'
                         bal = bal + (wager * 35) - wager
+                        response = 'Success! Your new balance is: ' + str(bal)
                     else:
-                        response = 'failure'
                         bal = bal - wage
+                        response = 'Failure! Your new balance is: ' + str(bal)
             if not enough_money:
                 response = "You don't have enough money for this wager!"
             df.loc[row_index] = [ctx.author, bal]

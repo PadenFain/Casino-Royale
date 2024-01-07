@@ -66,26 +66,6 @@ def AllIn(ctx):
             df.to_csv('userinfo.csv', index=False)
         return response
 
-def AllIn(ctx):
-    df = pd.read_csv('userinfo.csv')
-    check = df['user_id'].eq(str(ctx.author)).any()
-    if check:
-        row_array = GetRowArray(ctx)
-        row_index = df.index.get_loc(df.loc[df['user_id'] == str(ctx.author)].index[0])
-        bal = int(row_array[1])
-        randchoice = random.randint(0,1)
-        if randchoice == 0:
-            bal = 500
-            df.loc[row_index] = [ctx.author, bal]
-            response = ("You lose!  New balance: 500 (Balances that fall below 500 will be raised to 500 out of pity)")
-            df.to_csv('userinfo.csv', index=False)
-        if randchoice == 1:
-            bal = bal * 2
-            df.loc[row_index] = [ctx.author, bal]
-            response = ("You win! New balance: " + str(bal))
-            df.to_csv('userinfo.csv', index=False)
-        return response
-
 ## Pretty much just GetBalance with responses that make more sense for the context
 def Register(ctx):
     df = pd.read_csv('userinfo.csv')

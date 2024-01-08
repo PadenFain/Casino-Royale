@@ -98,7 +98,7 @@ def Roulette(ctx):
             result = random.randint(0, 36)
 
             ## sets bools for what type of bet this is
-            if int(row_array[1]) >= wager:
+            if int(row_array[1]) >= wager >= 0:
                 enough_money = True
             elif int(row_array[1]) < wager:
                 enough_money = False

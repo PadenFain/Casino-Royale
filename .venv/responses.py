@@ -100,7 +100,7 @@ def Roulette(ctx):
             ## sets bools for what type of bet this is
             if int(row_array[1]) >= wager >= 0:
                 enough_money = True
-            elif int(row_array[1]) < wager:
+            else:
                 enough_money = False
             if message_array[2] == 'black' or message_array[2] == 'red' or message_array[2] == 'green':
                 colors = True

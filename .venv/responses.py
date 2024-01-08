@@ -3,6 +3,8 @@ import discord
 import discord.ui
 import time
 import pandas as pd
+import traceback
+import sys
 
 
 
@@ -85,6 +87,7 @@ def Roulette(ctx):
     message_array = message.split()
     df = pd.read_csv('userinfo.csv')
     check = df['user_id'].eq(str(ctx.author)).any()
+    response = "The roulette command needs to be formatted (!roulette [amount you wish to wager] [either a number 0-36 or red/black/green] \n\nPlease use !roulettehelp for more information."
     if check:
         row_array = GetRowArray(ctx)
         row_index = df.index.get_loc(df.loc[df['user_id'] == str(ctx.author)].index[0])
@@ -94,46 +97,52 @@ def Roulette(ctx):
         result = random.randint(0, 36)
 
         ## sets bools for what type of bet this is
+        if int(row_array[1]) >= wager:
+            enough_money = True
+        elif int(row_array[1]) < wager:
+            enough_money = False
+        if message_array[2] == 'black' or message_array[2] == 'red' or message_array[2] == 'green':
+            colors = True
+        else:
+            colors = False
         try:
-            if int(row_array[1]) >= wager:
-                enough_money = True
-            elif int(row_array[1]) < wager:
-                enough_money = False
-            if message_array[2] == 'black' or message_array[2] == 'red' or message_array[2] == 'green':
-                colors = True
+            if 0 <= int(message_array[2]) < 37:
+                in_range = True
             else:
-                colors = False
-
-            ## checks bools and runs bet
-            if enough_money and colors and message_array[2] != 'green':
-                if result >= 17:
-                    bal = bal + wager
-                    response = 'Success! Your new balance is: ' + str(bal)
-                else:
-                    bal = bal - wager
-                    response = 'Failure! Your new balance is: ' + str(bal)
-            if enough_money and colors and message_array[2] == 'green':
-                if result == 0:
-                    bal = bal + (wager * 35) - wager
-                    response = 'Success! Your new balance is: ' + str(bal)
-                else:
-                    bal = bal - wager
-                    response = 'Failure! Your new balance is: ' + str(bal)
-            if enough_money and not colors:
+                in_range = False
+        except Exception:
+            pass
+        ## checks bools and runs bet
+        if enough_money and colors and message_array[2] != 'green':
+            if result >= 17:
+                bal = bal + wager
+                response = 'Success! Your new balance is: ' + str(bal)
+            else:
+                bal = bal - wager
+                response = 'Failure! Your new balance is: ' + str(bal)
+        if enough_money and colors and message_array[2] == 'green':
+            if result == 0:
+                bal = bal + (wager * 35) - wager
+                response = 'Success! Your new balance is: ' + str(bal)
+            else:
+                bal = bal - wager
+                response = 'Failure! Your new balance is: ' + str(bal)
+        try:
+            if enough_money and in_range and not colors:
                     if result == int(message_array[2]):
                         bal = bal + (wager * 35) - wager
                         response = 'Success! Your new balance is: ' + str(bal)
                     else:
-                        bal = bal - wage
+                        bal = bal - wager
                         response = 'Failure! Your new balance is: ' + str(bal)
-            if not enough_money:
-                response = "You don't have enough money for this wager!"
-            df.loc[row_index] = [ctx.author, bal]
-            df.to_csv('userinfo.csv', index=False)
         except Exception:
-            response = "Exception caught.  This is likely a formatting error on your part.  Please use !roulettehelp for more info"
-    if not check:
-        response = Register(ctx)
+            pass
+        if not enough_money:
+            response = "You don't have enough money for this wager!"
+        df.loc[row_index] = [ctx.author, bal]
+        df.to_csv('userinfo.csv', index=False)
+        if not check:
+            response = Register(ctx)
     return response
 
 RouletteHelp = ("The roulette command needs to be formatted (!roulette [amount you wish to wager] [either a number 0-36 or red/black/green] \nThis command currently only supports single-spot or color bets.")

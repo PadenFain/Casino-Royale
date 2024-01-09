@@ -3,9 +3,6 @@ import discord
 import discord.ui
 import time
 import pandas as pd
-import traceback
-import sys
-import time
 
 
 
@@ -89,6 +86,7 @@ RouletteHelp = ("The roulette command needs to be formatted (!roulette [amount y
 Help = "!register: Creates your profile.\n\n!balance: Checks your current balance.\n\n!allin: Wagers your entire balance on a 50/50 coinflip.\n\n!roulette [wager] [bet]: Bets on your selected roulette spot.\n\n!roulettehelp: More info on the roulette command."
 
 def Roulette(ctx):
+    user = Gambler(ctx)
     message_array = ReturnMessageArray(ctx)
     roulette_id = RouletteType(message_array)
     response = "something went wrong"
@@ -159,6 +157,4 @@ def PayoutMaster(bet, payout_id):
         case 2:
             bet = 0
     return bet
-
-
 

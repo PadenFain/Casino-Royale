@@ -5,6 +5,7 @@ import time
 import pandas as pd
 import traceback
 import sys
+import time
 
 
 
@@ -82,80 +83,82 @@ def Register(ctx):
         return ("Congratulations!  You are now registered.  Your current balance is: 500")
 
 ## TODO: simplify the code in the roulette command, I should be able to pass the actual factoring into a different function and return a payout amount.
-def Roulette(ctx):
-    message = ctx.content.lower()
-    message_array = message.split()
-    df = pd.read_csv('userinfo.csv')
-    check = df['user_id'].eq(str(ctx.author)).any()
-    response = "The roulette command needs to be formatted (!roulette [amount you wish to wager] [either a number 0-36 or red/black/green] \n\nPlease use !roulettehelp for more information."
-    if check:
-        try:
-            row_array = GetRowArray(ctx)
-            row_index = df.index.get_loc(df.loc[df['user_id'] == str(ctx.author)].index[0])
-            wager = int(message_array[1])
-            bet = message_array[2]
-            bal = int(row_array[1])
-            result = random.randint(0, 36)
-
-            ## sets bools for what type of bet this is
-            if int(row_array[1]) >= wager >= 0:
-                enough_money = True
-            else:
-                enough_money = False
-            if message_array[2] == 'black' or message_array[2] == 'red' or message_array[2] == 'green':
-                colors = True
-            else:
-                colors = False
-            try:
-                if 0 <= int(message_array[2]) < 37:
-                    in_range = True
-                else:
-                    in_range = False
-            except Exception:
-                pass
-            ## checks bools and runs bet
-            if enough_money and colors and message_array[2] != 'green':
-                if result >= 17:
-                    bal = bal + wager
-                    response = 'Success! Your new balance is: ' + str(bal)
-                else:
-                    bal = bal - wager
-                    response = 'Failure! Your new balance is: ' + str(bal)
-            if enough_money and colors and message_array[2] == 'green':
-                if result == 0:
-                    bal = bal + (wager * 35) - wager
-                    response = 'Success! Your new balance is: ' + str(bal)
-                else:
-                    bal = bal - wager
-                    response = 'Failure! Your new balance is: ' + str(bal)
-            try:
-                if enough_money and in_range and not colors:
-                        if result == int(message_array[2]):
-                            bal = bal + (wager * 35) - wager
-                            response = 'Success! Your new balance is: ' + str(bal)
-                        else:
-                            bal = bal - wager
-                            response = 'Failure! Your new balance is: ' + str(bal)
-            except Exception:
-                pass
-            if not enough_money:
-                response = "You don't have enough money for this wager!"
-            df.loc[row_index] = [ctx.author, bal]
-            df.to_csv('userinfo.csv', index=False)
-        except Exception:
-            pass
-        if not check:
-            response = Register(ctx)
-    return response
 
 RouletteHelp = ("The roulette command needs to be formatted (!roulette [amount you wish to wager] [either a number 0-36 or red/black/green] \nThis command currently only supports single-spot or color bets.")
 
 Help = "!register: Creates your profile.\n\n!balance: Checks your current balance.\n\n!allin: Wagers your entire balance on a 50/50 coinflip.\n\n!roulette [wager] [bet]: Bets on your selected roulette spot.\n\n!roulettehelp: More info on the roulette command."
 
+def Roulette(ctx):
+    message_array = ReturnMessageArray(ctx)
+    roulette_id = RouletteType(message_array)
+    response = "something went wrong"
+    result = random.randint(0, 36)
+    df = pd.read_csv('userinfo.csv')
+    check = df['user_id'].eq(str(ctx.author)).any()
+    row_array = GetRowArray(ctx)
+    row_index = df.index.get_loc(df.loc[df['user_id'] == str(ctx.author)].index[0])
+    wager = int(message_array[1])
+    bal = int(row_array[1])
+    payout_id = 2
+    if check:
+        if int(row_array[1]) >= wager >= 0:
+            enough_money = True
+        else:
+            enough_money = False
+        if enough_money:
+            match roulette_id:
+                case 0:
+                    if 0 < result <= 16:
+                        response = 'Success!'
+                        payout_id = 0
+                    else:
+                        response = 'Failure!'
+                case 1:
+                    if result == 0:
+                        response = 'Success!'
+                        payout_id = 1
+                    else:
+                        response = 'Failure!'
+                case 2:
+                    response = "Exception caught in RouletteType function.  This may be because you improperly formatted the command.  Use !roulettehelp for more info."
+            payout = PayoutMaster(wager, payout_id) - wager
+            df.loc[row_index] = [ctx.author, bal + payout]
+            df.to_csv('userinfo.csv', index=False)
+            response = response + " Your new balance is: " + str(bal + payout)
+        if not enough_money:
+            response = "You do not have enough money for this wager"
+    if not check:
+        response = "You are not yet registered.  Please use !register"
+    return response
 
+def ReturnMessageArray(ctx):
+    message = ctx.content.lower()
+    message_array = message.split()
+    return message_array
 
+def RouletteType(message_array):
+    try:
+        if message_array[2] == 'red' or message_array[2] == 'black':
+            roulette_id = 0
+        elif message_array[2] == 'green':
+            roulette_id = 1
+        elif 0 < int(message_array[2]) <= 36:
+            roulette_id = 1
+        else:
+            roulette_id = 2
+    except Exception:
+        roulette_id = 2
+    return roulette_id
 
-
+def PayoutMaster(bet, payout_id):
+    match payout_id:
+        case 0:
+            bet = bet * 2
+        case 1:
+            bet = bet * 36
+        case 2:
+            bet = 0
+    return bet
 
 
 
